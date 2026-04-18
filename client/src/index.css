@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #030712; /* gray-950 */
+  color: #f9fafb;
+  -webkit-font-smoothing: antialiased;
+}
