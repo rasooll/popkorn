@@ -78,6 +78,7 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
       setVideoSrcType('url')
       socket?.emit('source:ready')
       setMyFileReady(true)
+      setTimeout(() => syncToState(room.playerState), 1500)
     }
   }
 
