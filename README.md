@@ -1,6 +1,18 @@
 # 🍿 Popkorn
 
-Watch videos together, in perfect sync.
+Watch videos together, in perfect sync — no account, no install, just a browser.
+
+<p align="center">
+  <a href="screenshots/popkorn.site-create-room.png"><img src="screenshots/popkorn.site-create-room.png" width="50%" alt="Create Room" /></a>
+</p>
+
+<p align="center">
+  <a href="screenshots/popkorn.site-join-room.png"><img src="screenshots/popkorn.site-join-room.png" width="30%" alt="Join Room" /></a>
+  &nbsp;&nbsp;
+  <a href="screenshots/popkorn.site-room.png"><img src="screenshots/popkorn.site-room.png" width="30%" alt="Room view" /></a>
+</p>
+
+
 
 ## What it does
 
