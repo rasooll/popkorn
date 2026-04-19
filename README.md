@@ -34,26 +34,35 @@ cd popkorn
 mise trust
 mise install
 
-# 3. Install all dependencies (root + client + server)
-npm install
-npm install --prefix client
-npm install --prefix server
+# 3. Install all dependencies
+mise run install
 ```
+
+---
+
+## Available tasks
+
+| Command               | Description                                          |
+|-----------------------|------------------------------------------------------|
+| `mise run install`    | Install all npm dependencies (root, client, server)  |
+| `mise run dev`        | Start client and server in development mode          |
+| `mise run test`       | Run all unit tests                                   |
+| `mise run test:watch` | Run tests in watch mode                              |
 
 ---
 
 ## Running in dev
 
 ```bash
-npm run dev
+mise run dev
 ```
 
 This starts both servers concurrently:
 
-| Service | URL |
-|---------|-----|
-| Frontend (Vite) | http://localhost:5173 |
-| Backend (Express + Socket.io) | http://localhost:3001 |
+| Service                  | URL                                        |
+|--------------------------|--------------------------------------------|
+| Frontend (Vite)          | <http://localhost:5173>                    |
+| Backend (Express + Socket.io) | <http://localhost:3001>               |
 
 The Vite dev server proxies `/socket.io` to port 3001 automatically — no manual CORS config needed.
 
@@ -66,16 +75,32 @@ curl http://localhost:3001/health
 
 ---
 
+## Tests
+
+```bash
+mise run test
+```
+
+66 tests across client and server using [Vitest](https://vitest.dev).
+
+| Package  | Framework                | Coverage                                              |
+|----------|--------------------------|-------------------------------------------------------|
+| `server` | Vitest                   | `roomManager` — all room lifecycle, state mutations   |
+| `client` | Vitest + Testing Library | `fingerprint`, `RoomLobby`, `SourceSelector`          |
+
+---
+
 ## Project structure
 
-```
+```text
 popkorn/
-├── client/          React + Vite + TypeScript frontend
+├── .mise.toml           Node 22 + task definitions
+├── client/              React + Vite + TypeScript frontend
 │   └── src/
 │       ├── components/
 │       ├── hooks/
 │       ├── lib/
-│       └── types/   ← all shared types live here
-└── server/          Node.js + Express + Socket.io backend
+│       └── types/       ← all shared types live here
+└── server/              Node.js + Express + Socket.io backend
     └── src/
 ```

@@ -1,2 +1,25 @@
 [tools]
 node = "22"
+
+[tasks.install]
+description = "Install all npm dependencies (root, client, server)"
+run = [
+  "npm install",
+  "npm install --prefix client",
+  "npm install --prefix server",
+]
+
+[tasks.dev]
+description = "Start client and server in development mode"
+run = "npm run dev"
+
+[tasks.test]
+description = "Run all unit tests (client and server)"
+run = [
+  "npm test --prefix client",
+  "npm test --prefix server",
+]
+
+[tasks."test:watch"]
+description = "Run tests in watch mode (client and server concurrently)"
+run = "concurrently --names 'client,server' --prefix-colors 'yellow,cyan' 'npm run test:watch --prefix client' 'npm run test:watch --prefix server'"
