@@ -27,7 +27,7 @@ Popkorn lets multiple people watch the same video in sync inside a shared room â
 
 ```bash
 # 1. Clone and enter the project
-git clone <repo-url>
+git clone https://github.com/rasooll/popkorn
 cd popkorn
 
 # 2. Trust the mise config and install Node 22
