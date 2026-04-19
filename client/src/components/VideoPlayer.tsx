@@ -11,17 +11,23 @@ interface Props {
   isSyncing: React.MutableRefObject<boolean>
   onEmitSync: (type: SyncEvent['type'], currentTime: number) => void
   onBuffer: (isBuffering: boolean) => void
+  onReady?: () => void
 }
 
-export function VideoPlayer({ src, srcType, canControl, playerRef, isSyncing, onEmitSync, onBuffer }: Props) {
+export function VideoPlayer({ src, srcType, canControl, playerRef, isSyncing, onEmitSync, onBuffer, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  // Ref so event handlers always read the current value without stale closure
   const canControlRef = useRef(canControl)
+  const onReadyRef = useRef(onReady)
+  const readyFired = useRef(false)
 
   useEffect(() => {
     canControlRef.current = canControl
     playerRef.current?.controls(canControl)
   }, [canControl, playerRef])
+
+  useEffect(() => {
+    onReadyRef.current = onReady
+  }, [onReady])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -63,6 +69,10 @@ export function VideoPlayer({ src, srcType, canControl, playerRef, isSyncing, on
     })
 
     player.on('canplay', () => {
+      if (!readyFired.current) {
+        readyFired.current = true
+        onReadyRef.current?.()
+      }
       if (!canControlRef.current) return
       onBuffer(false)
       onEmitSync('buffer_end', player.currentTime() ?? 0)

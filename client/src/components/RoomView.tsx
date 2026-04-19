@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import type { Socket } from 'socket.io-client'
 import type { RoomState, VideoSource, ServerToClientEvents, ClientToServerEvents, SyncEvent } from '../types'
 import { VideoPlayer } from './VideoPlayer'
@@ -24,13 +24,14 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
   const freeControl = room.freeControl
   const [myFileReady, setMyFileReady] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
+  const pendingSyncState = useRef<typeof room.playerState | null>(null)
 
   const handleBufferingChange = useCallback((isBuffering: boolean, uid?: string) => {
     const member = room.members.find((m) => m.socketId === uid)
     setBuffering({ active: isBuffering, username: member?.displayName })
   }, [room.members])
 
-  const { playerRef, canControl, emitSync, isSyncing, syncToState } = usePlayer({
+  const { playerRef, canControl, emitSync, isSyncing, syncToState, autoplayBlocked, setAutoplayBlocked } = usePlayer({
     socket,
     isHost,
     freeControl,
@@ -78,7 +79,7 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
       setVideoSrcType('url')
       socket?.emit('source:ready')
       setMyFileReady(true)
-      setTimeout(() => syncToState(room.playerState), 1500)
+      pendingSyncState.current = room.playerState
     }
   }
 
@@ -94,8 +95,7 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
       const isHls = url.toLowerCase().endsWith('.m3u8')
       setVideoSrc(url)
       setVideoSrcType(isHls ? 'hls' : 'url')
-      // Defer sync until player has loaded the source
-      setTimeout(() => syncToState(room.playerState), 1500)
+      pendingSyncState.current = room.playerState
     }
   }, [room.videoSource, isHost]) // intentionally omit syncToState/playerState to only fire on source change
 
@@ -142,23 +142,44 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         {/* Left: video + source selector */}
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 bg-black flex items-center justify-center min-h-0">
+          <div className="flex-1 bg-black flex items-center justify-center min-h-0 relative">
             {videoSrc ? (
-              <VideoPlayer
-                src={videoSrc}
-                srcType={videoSrcType}
-                canControl={canControl}
-                playerRef={playerRef}
-                isSyncing={isSyncing}
-                onEmitSync={(type: SyncEvent['type'], t: number) => emitSync(type, t)}
-                onBuffer={(isBuffering) => {
-                  if (isBuffering) {
-                    socket?.emit('sync:event', { type: 'buffer_start', currentTime: playerRef.current?.currentTime() ?? 0 })
-                  } else {
-                    socket?.emit('sync:event', { type: 'buffer_end', currentTime: playerRef.current?.currentTime() ?? 0 })
-                  }
-                }}
-              />
+              <>
+                <VideoPlayer
+                  src={videoSrc}
+                  srcType={videoSrcType}
+                  canControl={canControl}
+                  playerRef={playerRef}
+                  isSyncing={isSyncing}
+                  onEmitSync={(type: SyncEvent['type'], t: number) => emitSync(type, t)}
+                  onBuffer={(isBuffering) => {
+                    if (isBuffering) {
+                      socket?.emit('sync:event', { type: 'buffer_start', currentTime: playerRef.current?.currentTime() ?? 0 })
+                    } else {
+                      socket?.emit('sync:event', { type: 'buffer_end', currentTime: playerRef.current?.currentTime() ?? 0 })
+                    }
+                  }}
+                  onReady={() => {
+                    if (pendingSyncState.current) {
+                      syncToState(pendingSyncState.current)
+                      pendingSyncState.current = null
+                    }
+                  }}
+                />
+                {autoplayBlocked && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playerRef.current?.play()
+                      setAutoplayBlocked(false)
+                    }}
+                    className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-3 cursor-pointer"
+                  >
+                    <span className="text-5xl">▶</span>
+                    <span className="text-sm text-gray-300">Click to join playback</span>
+                  </button>
+                )}
+              </>
             ) : (
               <div className="text-center text-gray-700">
                 <div className="text-5xl mb-3">🎬</div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import type { Socket } from 'socket.io-client'
 import type { ServerToClientEvents, ClientToServerEvents, SyncEvent, PlayerState } from '../types'
 
@@ -14,6 +14,7 @@ interface UsePlayerOptions {
 export function usePlayer({ socket, isHost, freeControl, onBufferingChange }: UsePlayerOptions) {
   const playerRef = useRef<ReturnType<typeof import('video.js')['default']> | null>(null)
   const isSyncing = useRef(false)
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false)
 
   const canControl = isHost || freeControl
 
@@ -74,14 +75,18 @@ export function usePlayer({ socket, isHost, freeControl, onBufferingChange }: Us
     const player = playerRef.current
     if (!player) return
     isSyncing.current = true
-    player.currentTime(state.currentTime)
+    const elapsed = state.playing ? (Date.now() - state.lastSyncTimestamp) / 1000 : 0
+    player.currentTime(state.currentTime + elapsed)
     if (state.playing) {
-      player.play()
+      const p = player.play()
+      if (p instanceof Promise) {
+        p.catch(() => { setAutoplayBlocked(true) })
+      }
     } else {
       player.pause()
     }
     setTimeout(() => { isSyncing.current = false }, 300)
   }, [])
 
-  return { playerRef, canControl, emitSync, isSyncing, syncToState }
+  return { playerRef, canControl, emitSync, isSyncing, syncToState, autoplayBlocked, setAutoplayBlocked }
 }
