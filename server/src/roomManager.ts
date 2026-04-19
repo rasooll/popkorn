@@ -101,3 +101,7 @@ export function updateMemberPing(roomId: string, socketId: string, ping: number)
   const member = room.members.find((m) => m.socketId === socketId)
   if (member) member.ping = ping
 }
+
+export function clearRooms(): void {
+  rooms.clear()
+}
