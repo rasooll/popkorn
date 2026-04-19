@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Footer } from './Footer'
 
 interface Props {
   onCreate: (displayName: string) => void
@@ -25,7 +26,7 @@ export function RoomLobby({ onCreate, onJoin, error }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <span className="text-6xl">🍿</span>
@@ -104,6 +105,7 @@ export function RoomLobby({ onCreate, onJoin, error }: Props) {
           </form>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

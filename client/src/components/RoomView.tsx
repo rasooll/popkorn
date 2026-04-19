@@ -6,6 +6,7 @@ import { SourceSelector } from './SourceSelector'
 import { ChatSidebar } from './ChatSidebar'
 import { usePlayer } from '../hooks/usePlayer'
 import { djb2 } from '../lib/fingerprint'
+import { Footer } from './Footer'
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -252,13 +253,13 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
               <button
                 type="button"
                 onClick={() => socket?.emit('room:freeControl', !freeControl)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${
+                className={`w-10 h-5 rounded-full transition-colors relative overflow-hidden ${
                   freeControl ? 'bg-amber-400' : 'bg-gray-700'
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                    freeControl ? 'translate-x-5' : 'translate-x-0.5'
+                  className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                    freeControl ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
@@ -271,6 +272,7 @@ export function RoomView({ room, mySocketId, isHost, socket, onLeave }: Props) {
           />
         </aside>
       </div>
+      <Footer />
     </div>
   )
 }
