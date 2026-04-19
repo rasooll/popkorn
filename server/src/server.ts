@@ -1,6 +1,7 @@
 import express from 'express'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import path from 'path'
 import {
   createRoom,
   joinRoom,
@@ -16,8 +17,9 @@ import type { SyncEvent } from './types'
 
 const app = express()
 const httpServer = createServer(app)
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
 const io = new Server(httpServer, {
-  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] },
+  cors: { origin: CORS_ORIGIN, methods: ['GET', 'POST'] },
 })
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001
@@ -25,6 +27,12 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
+
+if (process.env.NODE_ENV === 'production') {
+  const staticDir = path.join(__dirname, '..', 'public')
+  app.use(express.static(staticDir))
+  app.get('*', (_req, res) => res.sendFile(path.join(staticDir, 'index.html')))
+}
 
 io.on('connection', (socket) => {
   console.log(`[connect] ${socket.id}`)
