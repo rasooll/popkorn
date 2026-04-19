@@ -23,3 +23,18 @@ run = [
 [tasks."test:watch"]
 description = "Run tests in watch mode (client and server concurrently)"
 run = "concurrently --names 'client,server' --prefix-colors 'yellow,cyan' 'npm run test:watch --prefix client' 'npm run test:watch --prefix server'"
+
+[tasks."docker:setup"]
+description = "Create and activate a multi-platform buildx builder (run once)"
+run = """
+if docker buildx inspect popkorn-builder > /dev/null 2>&1; then
+  docker buildx use popkorn-builder
+  echo "Builder 'popkorn-builder' already exists, activated."
+else
+  docker buildx create --name popkorn-builder --driver docker-container --bootstrap --use
+  echo "Builder 'popkorn-builder' created and activated."
+fi
+"""
+
+# docker-push is defined as a file task in .mise/tasks/docker-push
+# Usage: mise run docker-push <tag>

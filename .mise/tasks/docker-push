@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# mise description="Build and push multi-platform image to Docker Hub — usage: mise run docker-push <tag>"
+set -euo pipefail
+
+TAG="${1:-}"
+if [ -z "$TAG" ]; then
+  echo "Error: no tag provided." >&2
+  echo "Usage: mise run docker-push <tag>" >&2
+  echo "Example: mise run docker-push v1.0.0" >&2
+  exit 1
+fi
+
+echo "→ Building rasooll/popkorn:${TAG} for linux/amd64 and linux/arm64…"
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --tag rasooll/popkorn:"${TAG}" \
+  --push \
+  .
+echo "✓ Pushed rasooll/popkorn:${TAG}"
